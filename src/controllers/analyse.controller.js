@@ -8,6 +8,7 @@ import ffmpeg from "fluent-ffmpeg";
 import fs from "fs";
 import { validateImages } from "../utils/verifyMetadata.js";
 import { sendImagesToMLModel } from "../services/ml.service.js";
+import { resizeImageFile } from "../utils/resize.js";
 
 
 const uploadPhotos = asyncHandler(async (req, res) => {
@@ -27,6 +28,9 @@ const uploadPhotos = asyncHandler(async (req, res) => {
     if (!files || files.length === 0) {
         throw new ApiError(400, "No photos uploaded.");
     }
+
+    
+
 
     const images = [];
 /*validation
@@ -48,11 +52,17 @@ const uploadPhotos = asyncHandler(async (req, res) => {
     const validImages = validationResults.filter((result) => result.success);
     const invalidImages = validationResults.filter((result) => !result.success);
 
-    if (validImages.length === 0) {
+    if (validImages.length === 0)
         throw new ApiError(400, "All uploaded images failed validation.");
     }
 */
     for (const file of files) {
+        const resizedImageFile = resizeImageFile([file], [512,512]);
+
+        if (!resizedImageFile) {
+            throw new ApiError(403, "Error resizing the image.");
+        }
+        
         const filePath = `./public/temp/${file.filename}`;
 
         // // Validate EXIF Metadata
