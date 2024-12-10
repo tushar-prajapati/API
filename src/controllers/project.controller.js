@@ -97,11 +97,36 @@ const uploadThumbnail= asyncHandler(async(req,res)=>{
   
 })
 
+const getProjectThumbnail = asyncHandler(async (req, res) => {
+  const { projectId } = req.params;
+
+  if (!projectId) {
+    throw new ApiError(400, "Project ID is required.");
+  }
+
+  const project = await Project.findById(projectId).select("thumbnail");
+
+  if (!project) {
+    throw new ApiError(404, "Project not found.");
+  }
+
+  // if (!project.thumbnail) {
+  //   throw new ApiError(404, "Thumbnail not found for this project.");
+  // }
+
+  return res.status(200).json(
+    new ApiResponse(200, { thumbnail: project.thumbnail }, "Thumbnail retrieved successfully.")
+  );
+});
+
+
+
 export {
     createProject,
     getUserProjects,
     getSingleProject,
-    uploadThumbnail
+    uploadThumbnail,
+    getProjectThumbnail,
     
 }
 
