@@ -1,6 +1,6 @@
 import express from "express";
 import multer from "multer";
-import { getTimeline, runAnalysis1, runAnalysis2, uploadPhotos, uploadVideo } from "../controllers/analyse.controller.js";
+import { getTimeline, runAnalysis1, runAnalysis2, runAnalysis3, uploadPhotos, uploadVideo } from "../controllers/analyse.controller.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 
 
@@ -15,6 +15,8 @@ router.route("/upload/video").post(verifyJWT, upload.single("video"), uploadVide
 router.route("/runAnalysis1/:segmentId").post(verifyJWT, upload.array("files"), runAnalysis1)
 
 router.route("/runAnalysis2/:segmentId").post(verifyJWT, upload.array("files"), runAnalysis2)
+
+router.route("/runAnalysis2/:segmentId").post(verifyJWT, upload.array("files"), runAnalysis3)
 
 router.route("/timeline/:segmentId").get(verifyJWT, getTimeline)
 

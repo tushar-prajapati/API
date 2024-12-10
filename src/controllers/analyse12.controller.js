@@ -29,6 +29,9 @@ const uploadPhotos = asyncHandler(async (req, res) => {
         throw new ApiError(400, "No photos uploaded.");
     }
 
+    
+
+
     const images = [];
 /*
     const requiredGPS = {
@@ -38,6 +41,7 @@ const uploadPhotos = asyncHandler(async (req, res) => {
 
     if (isNaN(requiredGPS.latitude) || isNaN(requiredGPS.longitude)) {
         throw new ApiError(400, "Invalid GPS coordinates provided.");
+
     }
 
     // Validate images
@@ -48,18 +52,28 @@ const uploadPhotos = asyncHandler(async (req, res) => {
     const validImages = validationResults.filter((result) => result.success);
     const invalidImages = validationResults.filter((result) => !result.success);
 
-    if (validImages.length === 0) {
+    if (validImages.length === 0)
         throw new ApiError(400, "All uploaded images failed validation.");
     }
+    
 */
     for (const file of files) {
-        const resizedImageFile = resizeImageFile([file], [512, 512]);
+        const resizedImageFile = resizeImageFile([file], [512,512]);
 
         if (!resizedImageFile) {
             throw new ApiError(403, "Error resizing the image.");
         }
-
+        
         const filePath = `./public/temp/${file.filename}`;
+
+        // // Validate EXIF Metadata
+        // const buffer = fs.readFileSync(filePath);
+        // const parser = exifParser.create(buffer);
+        // const exifData = parser.parse();
+
+        // if (!exifData) {
+        //     throw new ApiError(400, "Invalid EXIF metadata.");
+        // }
 
         // Upload image to Cloudinary
         const uploadedImage = await uploadOnCloudinary(filePath);
@@ -76,7 +90,6 @@ const uploadPhotos = asyncHandler(async (req, res) => {
 
     res.status(201).json(new ApiResponse(201, "Photos uploaded and analysis initiated.", { analysis }));
 });
-
 
 const uploadVideo = asyncHandler(async (req, res) => {
     const { segmentId } = req.body;
@@ -292,13 +305,12 @@ const getTimeline = asyncHandler(async (req, res) => {
     if (!segment) {
         throw new ApiError(404, "Segment not found.");
     }
-    
-    
+
     const analyses = await Analyse.find({ segment: segmentId });
-    console.log(analyses)
-    // if (!analyses || analyses.length === 0) {
-    //     throw new ApiError(404, "No analyses found for this segment.");
-    // }
+
+    if (!analyses || analyses.length === 0) {
+        throw new ApiError(404, "No analyses found for this segment.");
+    }
 
     return res.status(200).json(new ApiResponse(200, analyses, "Timeline fetched successfully."));
 });
