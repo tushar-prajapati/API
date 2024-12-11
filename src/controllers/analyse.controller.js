@@ -212,31 +212,25 @@ const uploadVideo = asyncHandler(async (req, res) => {
 const runAnalysis = asyncHandler(async (req, res) => {
     const { segmentId } = req.params;
 
-    // Validate segment existence
     const segment = await Segment.findById(segmentId).populate("analyse");
     // console.log(segment)
     if (!segment) {
         throw new ApiError(404, "Segment not found.");
     }
 
-    // Ensure the segment has associated analyses
     if (!segment.analyse || segment.analyse.length === 0) {
         throw new ApiError(400, "No analyses associated with this segment.");
     }
 
-    // Get the first analysis and validate its images
     const firstAnalyse = segment.analyse[0];
     if (!firstAnalyse.images || firstAnalyse.images.length === 0) {
         throw new ApiError(400, "No images available in the first analysis for this segment.");
     }
 
-    // Get the first image path from the first analysis
     const firstImagePath = firstAnalyse.images[0];
 
-    // Prepare an array containing only the first image
     const imagePaths = [firstImagePath];
 
-    // Send the first image to the ML model for analysis
     let mlResults;
     try {
         mlResults = segmentResults;
@@ -245,20 +239,18 @@ const runAnalysis = asyncHandler(async (req, res) => {
         throw new ApiError(500, "ML model analysis failed.");
     }
 
-    // Generate a name for the analysis based on timestamp
     const timestamp = new Date().toISOString();
     const analysisName = `Analysis_${timestamp}`;
 
-    // Save the analysis results in the database
     const newAnalysis = await Analyse.create({
         name: analysisName,
         segment: segmentId,
         images: imagePaths,
-        report: mlResults, // Parsed ML results
+        report: mlResults, 
         analyseStatus: "Processed",
     });
     
-    // Add the new analysis to the segment's analyse array
+ 
     segment.analyse.push(newAnalysis._id);
     await segment.save();
 
