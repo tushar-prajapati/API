@@ -2,6 +2,7 @@ import express from "express";
 import multer from "multer";
 import { getTimeline, runAnalysis, uploadPhotos, uploadVideo } from "../controllers/analyse.controller.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
+import { getSingleAnalyse } from "../controllers/analyse.controller.js";
 
 
 const router = express.Router();
@@ -15,6 +16,8 @@ router.route("/upload/video").post(verifyJWT, upload.single("video"), uploadVide
 router.route("/runAnalysis/:segmentId").post(verifyJWT, upload.array("files"), runAnalysis)
 
 router.route("/timeline/:segmentId").get(verifyJWT, getTimeline)
+
+router.route("/getSingleAnalyse").get(verifyJWT, getSingleAnalyse)
 
 
 export default router;

@@ -21,40 +21,136 @@ const generateAccessAndRefreshTokens  = async(userId)=>{
 }
 
 
-const registerUser = asyncHandler(async(req,res)=>{
+// const registerUser = asyncHandler(async(req,res)=>{
 
-   const {fullName, email, username, password, isAdmin} = req.body;
-   console.log(fullName,email,username,password,isAdmin)
+//    const {fullName, email, username, password, isAdmin, masterId} = req.body;
+//    console.log(fullName,email,username,password,isAdmin)
 
-    if(!fullName || !email || !password || !username)
-    {
-        throw new ApiError(400, "All fields are required.")
-    }
-    const existedUser = await User.findOne({
-        $or: [{ username }, { email }]
-    })
+//     if(!fullName || !email || !password || !username)
+//     {
+//         throw new ApiError(400, "All fields are required.")
+//     }
+//     const existedUser = await User.findOne({
+//         $or: [{ username }, { email }]
+//     })
 
-    if (existedUser) {
-        throw new ApiError(409, "User with email or username already exists")
-    }
+//     if (existedUser) {
+//         throw new ApiError(409, "User with email or username already exists")
+//     }
+
+//     if(!isAdmin){
+//         // const masterId = req.body;
+//         const user = await User.create({
+//             fullName,
+//             email,
+//             password,
+//             username: username.toLowerCase(),
+//             isAdmin: false,
+//             master: masterId,
+//         });
+
+//         if(!user){
+//             throw new ApiError(403, "User not created")
+//         }
+//         const masterPerson = await User.findById(masterId).select("-password");
+//         await masterPerson.employees.push(user._id);
+
+//         await masterPerson.save({validateBeforeSave: false})
+//         if(!masterPerson){
+//             throw new ApiError(401, "No Admin found")
+//         }
+//         return res
+//         .status(200)
+//         .json(new ApiResponse(200, "Employee Registered Successfully"))
+//     }
     
+//     const user = await User.create({
+//         fullName,
+//         email, 
+//         password,
+//         username: username.toLowerCase(),
+//         isAdmin: true,
+//     })
+//     const createdUser = await User.findById(user._id).select(
+//         "-password -refreshToken"
+//     );
+//     if(!createdUser){
+//         throw new ApiError(501,"Something went wrong while registering the user")
+//     }  
+//     return res.status(201).json(
+//         new ApiResponse(200,createdUser, "User Registered Successfully")
+//     )
+// })
+
+const registerUser = asyncHandler(async (req, res) => {
+    const { fullName, email, username, password, isAdmin, masterUsername } = req.body;
+
+    if (!fullName || !email || !password || !username) {
+        throw new ApiError(400, "All fields are required.");
+    }
+
+    const existedUser = await User.findOne({
+        $or: [{ username }, { email }],
+    });
+    if (existedUser) {
+        throw new ApiError(409, "User with email or username already exists.");
+    }
+
+    const masterUser = await User.findOne({ username: masterUsername.toLowerCase() });
+    
+
+
+    if (!isAdmin) {
+        const user = await User.create({
+            fullName,
+            email,
+            password,
+            username: username.toLowerCase(),
+            isAdmin: false,
+            master: masterUser._id,
+        });
+
+        if (!user) {
+            throw new ApiError(403, "User not created.");
+        }
+
+        
+        if (!masterUser) {
+            throw new ApiError(404, "Master user not found.");
+        }
+
+        masterUser.employees.push(user._id);
+        await masterUser.save().catch((err) => {
+            throw new ApiError(500, "Failed to update master user.");
+        });
+
+        return res
+            .status(200)
+            .json(new ApiResponse(200, user, "Employee Registered Successfully"));
+    }
+
     const user = await User.create({
         fullName,
-        email, 
+        email,
         password,
         username: username.toLowerCase(),
-        isAdmin
-    })
-    const createdUser = await User.findById(user._id).select(
-        "-password -refreshToken"
-    );
-    if(!createdUser){
-        throw new ApiError(501,"Something went wrong while registering the user")
-    }  
-    return res.status(201).json(
-        new ApiResponse(200,createdUser, "User Registered Successfully")
-    )
-})
+        isAdmin: true,
+    });
+
+    const createdUser = await User.findById(user._id)
+        .select("-password -refreshToken")
+        .populate("employees master");
+    if (!createdUser) {
+        throw new ApiError(501, "Something went wrong while registering the user.");
+    }
+
+    return res
+        .status(201)
+        .json(
+            new ApiResponse(200, createdUser, "Admin Registered Successfully")
+        );
+});
+
 
 const loginUser = asyncHandler(async(req,res)=>{
    

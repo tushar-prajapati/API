@@ -212,11 +212,13 @@ const uploadVideo = asyncHandler(async (req, res) => {
 const runAnalysis = asyncHandler(async (req, res) => {
     const { segmentId } = req.params;
 
-    const segment = await Segment.findById(segmentId).populate("analyse");
+    const segment = await Segment.findById(segmentId).populate("analyse")
+    // .populate("images");
     // console.log(segment)
     if (!segment) {
         throw new ApiError(404, "Segment not found.");
     }
+    
 
     if (!segment.analyse || segment.analyse.length === 0) {
         throw new ApiError(400, "No analyses associated with this segment.");
@@ -280,4 +282,12 @@ const getTimeline = asyncHandler(async (req, res) => {
     return res.status(200).json(new ApiResponse(200, analyses, "Timeline fetched successfully."));
 });
 
-export {uploadPhotos, uploadVideo, runAnalysis, getTimeline}
+const getSingleAnalyse = asyncHandler(async(req,res)=>{
+    const { analyseId } = req.body;
+    console.log("Segment ID:", analyseId);
+
+    const analyse = await Analyse.findById(analyseId);
+    res.status(200).json(new ApiResponse(200, analyse, "Segments fetched successfully"))
+})
+
+export {uploadPhotos, uploadVideo, runAnalysis, getTimeline, getSingleAnalyse}

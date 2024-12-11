@@ -2,10 +2,10 @@ import axios from "axios";
 import { ApiError } from "../utils/ApiError.js";
 
 // Function to send images to the ML Model
-const sendImagesToMLModel = async (images) => {
+const sendImagesToMLModel = async (image, images) => {
     try {
         const response = await axios.post(`${ML_MODEL_URL}/analyze`, {
-            images, // Pass image paths or base64-encoded strings as required by the ML model
+            image, images // Pass image paths or base64-encoded strings as required by the ML model
         });
 
         // Parse and return the ML model's response

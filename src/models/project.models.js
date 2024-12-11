@@ -28,7 +28,10 @@ const projectSchema = new mongoose.Schema({
     }],
     thumbnail: {
         type: String,
-    }
+    },
+    stretch: {
+        type: Number
+    },
 
 
 },{timestamps: true})

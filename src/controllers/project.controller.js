@@ -9,28 +9,34 @@ import fs from
 
 
 const createProject = asyncHandler(async (req, res) => {
-  const { title, description, segments } = req.body;
+  const { title, description, segments , stretch} = req.body;
 
-  if (!title || !segments || segments.length === 0) {
-    throw new ApiError(400, "Project title and at least one segment are required.");
+  if (!title || !segments || segments.length===0 || !stretch) {
+    throw new ApiError(400, "Project title, at least one segment and strech are required.");
   }
+  
   const existingProject = await Project.findOne({ title, owner: req.user._id });
     if (existingProject) {
         throw new ApiError(409, "A project with this title already exists.");
     }
+    
 
   const project = await Project.create({
     title,
     description,
     owner: req.user._id,
+    stretch,
   });
+
 
   const createdSegments = await Segment.insertMany(
     segments.map((name) => ({ name, project: project._id }))
   );
 
   project.segments = createdSegments.map((seg) => seg._id);
-  await project.save();
+  await project.save({validateBeforeSave: false});
+  await req.user.projects.push(project);
+  await req.user.save({validateBeforeSave: false});
 
   return res.status(201).json(
     new ApiResponse(201, project, "Project created successfully.")
