@@ -261,6 +261,14 @@ const runAnalysis = asyncHandler(async (req, res) => {
     );
 });
 
+const recentAnalysis = asyncHandler(async(req,res)=>{
+    const {segmentId} = req.body;
+    const segment = await Segment.findById(segmentId)
+
+    const recent= segment.analyse[-1]
+    res.status(200, recent.images, "Recent Images Fetched Successfully" )
+
+})
 
 
 
@@ -290,4 +298,4 @@ const getSingleAnalyse = asyncHandler(async(req,res)=>{
     res.status(200).json(new ApiResponse(200, analyse, "Segments fetched successfully"))
 })
 
-export {uploadPhotos, uploadVideo, runAnalysis, getTimeline, getSingleAnalyse}
+export {uploadPhotos, uploadVideo, runAnalysis, getTimeline, getSingleAnalyse, recentAnalysis}
