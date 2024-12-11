@@ -32,8 +32,11 @@ const userSchema = new mongoose.Schema({
     projects: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: "Project"
-    },
-    ]
+    }],
+    isAdmin: {
+        type: Boolean,
+        default: false,
+    }
  
 },{timestamps: true})
 

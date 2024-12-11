@@ -23,8 +23,8 @@ const generateAccessAndRefreshTokens  = async(userId)=>{
 
 const registerUser = asyncHandler(async(req,res)=>{
 
-   const {fullName, email, username, password} = req.body;
-   console.log(fullName,email,username,password)
+   const {fullName, email, username, password, isAdmin} = req.body;
+   console.log(fullName,email,username,password,isAdmin)
 
     if(!fullName || !email || !password || !username)
     {
@@ -42,7 +42,8 @@ const registerUser = asyncHandler(async(req,res)=>{
         fullName,
         email, 
         password,
-        username: username.toLowerCase()
+        username: username.toLowerCase(),
+        isAdmin
     })
     const createdUser = await User.findById(user._id).select(
         "-password -refreshToken"
@@ -154,7 +155,7 @@ const changeCurrentPassword = asyncHandler(async(req,res)=>{
     const user = await User.findById(req.user._id);
 
     if(newPassword !== confPassword){
-        new ApiError(402, "Passwords do not match")
+        throw new ApiError(402, "Passwords do not match")
     }
 
     const isPasswordCorrect = user.isPasswordCorrect(oldPassword)
@@ -172,7 +173,7 @@ const changeCurrentPassword = asyncHandler(async(req,res)=>{
 const getCurrentUser = asyncHandler(async(req,res)=>{
     return res
     .status(200)
-    .json(200, req.user, "Current user fetched successfully")
+    .json(new ApiResponse(200, req.user, "Current user fetched successfully"))
 })
 
 
