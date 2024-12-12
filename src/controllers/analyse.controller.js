@@ -230,13 +230,14 @@ const runAnalysis = asyncHandler(async (req, res) => {
     }
 
     const firstImagePath = firstAnalyse.images[0];
+    const secondImagePath = firstAnalyse.images[1];
 
-    const imagePaths = [firstImagePath];
+    // const imagePaths = [firstImagePath];
 
     let mlResults;
     try {
-        mlResults = segmentResults;
-        // mlResults = await sendImagesToMLModel(imagePaths, process.env.MODEL_URL);
+        // mlResults = segmentResults;
+        mlResults = await sendImagesToMLModel(firstImagePath,secondImagePath);
     } catch (err) {
         throw new ApiError(500, "ML model analysis failed.");
     }
