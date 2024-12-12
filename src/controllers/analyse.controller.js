@@ -56,12 +56,7 @@ const uploadPhotos = asyncHandler(async (req, res) => {
         */
 
     for (const file of files) {
-        // const resizedImageFile = resizeImageFile([file], [512, 512]);
-
-        // if (!resizedImageFile) {
-        //     throw new ApiError(403, "Error resizing the image.");
-        // }
-
+        
         const filePath = `./public/temp/${file.filename}`;
 
         // Upload image to Cloudinary
@@ -209,58 +204,97 @@ const uploadVideo = asyncHandler(async (req, res) => {
 // });
 
 
+// const runAnalysis = asyncHandler(async (req, res) => {
+//     const { segmentId } = req.params;
+//     const files = req.files; // Uploaded files
+
+//     if (!files || files.length === 0) {
+//         throw new ApiError(400, "No files provided for analysis.");
+//     }
+
+//     // Validate segment existence
+//     const segment = await Segment.findById(segmentId);
+//     if (!segment) {
+//         throw new ApiError(404, "Segment not found.");
+//     }
+
+//     // Collect image paths
+//     const file1 = files[0];
+//     const file2 = files[1];
+
+//     // Send images to ML model for analysis
+//     let mlResults;
+//     try {
+//         mlResults = await sendImagesToMLModel(file1,file2);
+//         } catch (err) {
+//         throw new ApiError(500, "ML model analysis failed.");
+//     }
+
+//     // Generate a name for the analysis based on timestamp
+//     const timestamp = new Date().toISOString();
+//     const analysisName = `Analysis_${timestamp}`;
+
+//     // Save the analysis results in the database
+//     const analysis = await Analyse.create({
+//         name: analysisName,
+//         segment: segmentId,
+//         images: imagePaths,
+//         report: mlResults, // Parsed ML results
+//         analyseStatus: "Processed",
+//     });
+
+//     return res.status(201).json(
+//         new ApiResponse(201, analysis, "Analysis completed and saved.")
+//     );
+// });
+
 const runAnalysis = asyncHandler(async (req, res) => {
     const { segmentId } = req.params;
+   
+    const files = req.files; // Uploaded files
 
-    const segment = await Segment.findById(segmentId).populate("analyse")
-    // .populate("images");
-    // console.log(segment)
+    console.log(files)
+
+
+    if (!files || files.length < 2) {
+        throw new ApiError(400, "At least two files are required for analysis.");
+    }
+    // Validate segment existence
+    const segment = await Segment.findById(segmentId);
     if (!segment) {
         throw new ApiError(404, "Segment not found.");
     }
+
     
 
-    if (!segment.analyse || segment.analyse.length === 0) {
-        throw new ApiError(400, "No analyses associated with this segment.");
-    }
-
-    const firstAnalyse = segment.analyse[0];
-    if (!firstAnalyse.images || firstAnalyse.images.length === 0) {
-        throw new ApiError(400, "No images available in the first analysis for this segment.");
-    }
-
-    const firstImagePath = firstAnalyse.images[0];
-    const secondImagePath = firstAnalyse.images[1];
-
-    // const imagePaths = [firstImagePath];
-
+    
     let mlResults;
     try {
-        // mlResults = segmentResults;
-        mlResults = await sendImagesToMLModel(firstImagePath,secondImagePath);
+        
+        // Send the streams to the ML model
+        mlResults = await sendImagesToMLModel(files[0], files[1]);
     } catch (err) {
-        throw new ApiError(500, "ML model analysis failed.");
+        console.error("Error during ML model analysis:", err.message);
+       
     }
 
+    // Generate a name for the analysis based on timestamp
     const timestamp = new Date().toISOString();
     const analysisName = `Analysis_${timestamp}`;
 
-    const newAnalysis = await Analyse.create({
+    // Save the analysis results in the database
+    const analysis = await Analyse.create({
         name: analysisName,
         segment: segmentId,
-        images: imagePaths,
-        report: mlResults, 
+        report: mlResults, // Parsed ML results
         analyseStatus: "Processed",
     });
-    
- 
-    segment.analyse.push(newAnalysis._id);
-    await segment.save();
 
     return res.status(201).json(
-        new ApiResponse(201, newAnalysis, "Analysis completed and saved.")
+        new ApiResponse(201, analysis, "Analysis completed and saved.")
     );
 });
+
 
 const recentAnalysis = asyncHandler(async(req,res)=>{
     const {segmentId} = req.body;

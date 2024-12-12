@@ -1,17 +1,28 @@
 import axios from "axios";
-import { ApiError } from "../utils/ApiError.js";
+import FormData from "form-data";
 
-// Function to send images to the ML Model
-const sendImagesToMLModel = async (image1, image2) => {
+const sendImagesToMLModel = async (file1, file2) => {
     try {
-        const response = await axios.post(`${process.env.ML_MODEL_URL}/analyze`, {
-            image1, image2 // Pass image paths or base64-encoded strings as required by the ML model
+        // Create a FormData instance
+        const formData = new FormData();
+
+        // Append file streams to formData
+        formData.append("file1", file1); // Optional filename
+        formData.append("file2", file2); // Optional filename
+
+        // Make the API call to the FastAPI server
+        const response = await axios.post(`${process.env.ML_MODEL_URL}/predict`, formData, {
+            headers: {
+                ...formData.getHeaders(), // Include form-data headers
+            },
         });
 
-        // Parse and return the ML model's response
+        // Return the parsed response
         return response.data;
     } catch (error) {
-        console.error("Error communicating with the ML model:", error.message);
+        console.error("Error communicating with the ML server:", error.message);
+
+        // Rethrow the error for the calling function to handle
         throw new ApiError(500, "Failed to process images with the ML model.");
     }
 };
