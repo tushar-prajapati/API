@@ -14,7 +14,7 @@ router.route("/upload/photos").post(verifyJWT, upload.array("photos", 50), uploa
 
 router.route("/upload/video").post(verifyJWT, upload.single("video"), uploadVideo);
 
-router.route("/runAnalysis/:segmentId").post(verifyJWT, upload.array("files", 2), runAnalysis)
+router.route("/runAnalysis/:segmentId").post(verifyJWT, upload.array("files",2), runAnalysis)
 
 router.route("/timeline/:segmentId").get(verifyJWT, getTimeline)
 

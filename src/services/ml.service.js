@@ -4,10 +4,10 @@ import { ApiError } from "../utils/ApiError.js";
 
 import fs from "fs"
 // Example: Buffer representing an image
-
+// 
 
 const sendImagesToMLModel = async (file1, file2) => {
-
+   
     try {
         // Create a FormData instance
         const formData = new FormData();

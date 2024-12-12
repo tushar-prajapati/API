@@ -252,14 +252,13 @@ const runAnalysis = asyncHandler(async (req, res) => {
     const { segmentId } = req.params;
    
     const files = req.files; // Uploaded files
-    console.log(typeof(files))
 
     // console.log(files)
 
 
-    if (!files || files.length < 2) {
-        throw new ApiError(400, "At least two files are required for analysis.");
-    }
+    // if (!files || files.length < 2) {
+    //     throw new ApiError(400, "At least two files are required for analysis.");
+    // }
     // Validate segment existence
     const segment = await Segment.findById(segmentId);
     if (!segment) {
@@ -273,7 +272,7 @@ const runAnalysis = asyncHandler(async (req, res) => {
     try {
         
         // Send the streams to the ML model
-        mlResults = await sendImagesToMLModel(files[0], files[1]);
+        mlResults = await sendImagesToMLModel(files[0],files[1]);
     } catch (err) {
         console.error("Error during ML model analysis:", err.message);
        
@@ -282,7 +281,6 @@ const runAnalysis = asyncHandler(async (req, res) => {
     // Generate a name for the analysis based on timestamp
     const timestamp = new Date().toISOString();
     const analysisName = `Analysis_${timestamp}`;
-    
 
     // Save the analysis results in the database
     const analysis = await Analyse.create({
