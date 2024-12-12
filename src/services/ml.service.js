@@ -1,19 +1,28 @@
 import axios from "axios";
 import FormData from "form-data";
+import { ApiError } from "../utils/ApiError.js";
+
+import fs from "fs"
+// Example: Buffer representing an image
+
 
 const sendImagesToMLModel = async (file1, file2) => {
+
     try {
         // Create a FormData instance
         const formData = new FormData();
-
+        
         // Append file streams to formData
-        formData.append("file1", file1); // Optional filename
+        formData.append("file1", file1);
+       
+        
+        // Optional filename
         formData.append("file2", file2); // Optional filename
 
         // Make the API call to the FastAPI server
         const response = await axios.post(`${process.env.ML_MODEL_URL}/predict`, formData, {
             headers: {
-                ...formData.getHeaders(), // Include form-data headers
+                'Content-Type':'multipart/form-data'
             },
         });
 

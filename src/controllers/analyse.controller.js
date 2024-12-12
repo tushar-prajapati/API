@@ -252,8 +252,9 @@ const runAnalysis = asyncHandler(async (req, res) => {
     const { segmentId } = req.params;
    
     const files = req.files; // Uploaded files
+    console.log(typeof(files))
 
-    console.log(files)
+    // console.log(files)
 
 
     if (!files || files.length < 2) {
@@ -281,6 +282,7 @@ const runAnalysis = asyncHandler(async (req, res) => {
     // Generate a name for the analysis based on timestamp
     const timestamp = new Date().toISOString();
     const analysisName = `Analysis_${timestamp}`;
+    
 
     // Save the analysis results in the database
     const analysis = await Analyse.create({
@@ -291,7 +293,7 @@ const runAnalysis = asyncHandler(async (req, res) => {
     });
 
     return res.status(201).json(
-        new ApiResponse(201, analysis, "Analysis completed and saved.")
+        new ApiResponse(201, mlResults, "Analysis completed and saved.")
     );
 });
 
